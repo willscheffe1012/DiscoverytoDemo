@@ -1,0 +1,58 @@
+{
+  "industry": "industrial_mfg",
+  "displayName": "PLACEHOLDER — pending curation industrial_mfg",
+  "valueDrivers": [
+    "PLACEHOLDER — pending curation improve forecast confidence",
+    "PLACEHOLDER — pending curation reduce planning firefighting"
+  ],
+  "painArchetypes": [
+    {
+      "name": "PLACEHOLDER — pending curation siloed planning",
+      "description": "PLACEHOLDER — pending curation generic supply-chain-planning pain",
+      "listenFor": [
+        "PLACEHOLDER — pending curation teams use different numbers",
+        "PLACEHOLDER — pending curation manual reconciliation"
+      ]
+    },
+    {
+      "name": "PLACEHOLDER — pending curation exception overload",
+      "description": "PLACEHOLDER — pending curation generic supply-chain-planning pain",
+      "listenFor": [
+        "PLACEHOLDER — pending curation too many expedites",
+        "PLACEHOLDER — pending curation planners chase shortages"
+      ]
+    }
+  ],
+  "discoveryQuestions": [
+    {
+      "section": "company",
+      "question": "PLACEHOLDER — pending curation discovery question 1 for company",
+      "why": "PLACEHOLDER — pending curation why this company question matters"
+    },
+    {
+      "section": "maturity",
+      "question": "PLACEHOLDER — pending curation discovery question 2 for maturity",
+      "why": "PLACEHOLDER — pending curation why this maturity question matters"
+    },
+    {
+      "section": "tools",
+      "question": "PLACEHOLDER — pending curation discovery question 3 for tools",
+      "why": "PLACEHOLDER — pending curation why this tools question matters"
+    },
+    {
+      "section": "pains",
+      "question": "PLACEHOLDER — pending curation discovery question 4 for pains",
+      "why": "PLACEHOLDER — pending curation why this pains question matters"
+    },
+    {
+      "section": "business_case",
+      "question": "PLACEHOLDER — pending curation discovery question 5 for business_case",
+      "why": "PLACEHOLDER — pending curation why this business_case question matters"
+    },
+    {
+      "section": "company",
+      "question": "PLACEHOLDER — pending curation discovery question 6 for company",
+      "why": "PLACEHOLDER — pending curation why this company question matters"
+    }
+  ]
+}
