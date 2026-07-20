@@ -31,7 +31,7 @@ export const artifacts = sqliteTable("artifacts", {
   engagementId: integer("engagement_id")
     .notNull()
     .references(() => engagements.id),
-  kind: text("kind", { enum: ["company_profile"] }).notNull(),
+  kind: text("kind", { enum: ["company_profile", "question_gaps", "maturity_assessment"] }).notNull(),
   version: integer("version").notNull(),
   contentJson: text("content_json").notNull(),
   modelUsed: text("model_used").notNull(),
@@ -119,5 +119,6 @@ export const maturityScores = sqliteTable("maturity_scores", {
   dimensionId: text("dimension_id").notNull(),
   stage: integer("stage").notNull(),
   evidence: text("evidence").notNull().default(""),
+  origin: text("origin", { enum: ["manual", "ai_accepted"] }).notNull().default("manual"),
   createdAt: integer("created_at").notNull(),
 });

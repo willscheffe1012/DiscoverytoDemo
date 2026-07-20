@@ -18,7 +18,19 @@ function config() {
   const model = process.env.AI_MODEL;
   if (provider !== "anthropic" && provider !== "openai_compatible") throw new AiClientError("AI_PROVIDER must be anthropic or openai_compatible");
   if (!baseUrl || !apiKey || !model) throw new AiClientError("AI_BASE_URL, AI_API_KEY, and AI_MODEL are required");
-  return { provider, baseUrl: trimSlash(baseUrl), apiKey, model };
+  let extraHeaders: Record<string, string> = {};
+  const rawExtra = process.env.AI_EXTRA_HEADERS;
+  if (rawExtra?.trim()) {
+    try {
+      const parsed = JSON.parse(rawExtra) as unknown;
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("AI_EXTRA_HEADERS must be a JSON object");
+      extraHeaders = Object.fromEntries(Object.entries(parsed).map(([key, value]) => [key, String(value)]));
+    } catch (error) {
+      throw new AiClientError(`AI_EXTRA_HEADERS must be valid JSON object: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  const authHeader = process.env.AI_AUTH_HEADER || "x-api-key";
+  return { provider, baseUrl: trimSlash(baseUrl), apiKey, model, authHeader, extraHeaders };
 }
 
 async function postJson(url: string, headers: Record<string, string>, body: unknown, attempt = 0): Promise<unknown> {
@@ -46,14 +58,15 @@ function normalizeOpenAi(json: unknown): string {
 }
 
 export async function complete(opts: CompleteOpts): Promise<string> {
-  const { provider, baseUrl, apiKey, model } = config();
+  const { provider, baseUrl, apiKey, model, authHeader, extraHeaders } = config();
   const maxTokens = opts.maxTokens ?? 4000;
   const temperature = opts.temperature ?? 0.2;
   if (provider === "anthropic") {
-    const json = await postJson(`${baseUrl}/v1/messages`, { "x-api-key": apiKey, "anthropic-version": "2023-06-01" }, { model, system: opts.system, messages: opts.messages, max_tokens: maxTokens, temperature });
+    const anthropicAuthValue = authHeader.toLowerCase() === "authorization" ? `Bearer ${apiKey}` : apiKey;
+    const json = await postJson(`${baseUrl}/v1/messages`, { ...extraHeaders, [authHeader]: anthropicAuthValue, "anthropic-version": "2023-06-01" }, { model, system: opts.system, messages: opts.messages, max_tokens: maxTokens, temperature });
     return normalizeAnthropic(json);
   }
-  const json = await postJson(`${baseUrl}/chat/completions`, { authorization: `Bearer ${apiKey}` }, { model, messages: [{ role: "system", content: opts.system }, ...opts.messages], max_tokens: maxTokens, temperature });
+  const json = await postJson(`${baseUrl}/chat/completions`, { ...extraHeaders, authorization: `Bearer ${apiKey}` }, { model, messages: [{ role: "system", content: opts.system }, ...opts.messages], max_tokens: maxTokens, temperature });
   return normalizeOpenAi(json);
 }
 

@@ -1,1 +1,68 @@
-{"scaleName":"Planning Maturity","dimensions":[{"id":"overall","name":"Overall planning maturity"}],"stages":[{"stage":1,"name":"React","description":"Planning is spreadsheets and tribal knowledge. Demand plan is basically last year plus a gut adjustment from sales. Supply side firefights: expedites, air freight, angry calls to suppliers. No single version of the truth — finance, sales, and ops each have their own numbers.","tells":["Customer can't answer \"what's your forecast accuracy?\" because nobody measures it"]},{"stage":2,"name":"Anticipate","description":"Functional planning exists but in silos. There's a demand planner running stat forecasts, a supply planner running MRP, maybe a monthly S&OP meeting that's really just a review deck.","tells":["Plans exist but don't talk to each other","The S&OP meeting relitigates the past instead of making forward decisions"]},{"stage":3,"name":"Integrate","description":"Where IBP as a discipline (not just the product) starts. One demand signal feeds supply, inventory, and financial planning. S&OP has real scenario discussion — \"if we take this promotion, what does it cost us in capacity?\" Constrained planning replaces unconstrained wish lists. Most mid-to-large manufacturers claim to be here; genuinely maybe 20-30% are.","tells":["One demand signal feeds supply, inventory, and financial planning","Scenario trade-offs are actually discussed in S&OP"]},{"stage":4,"name":"Collaborate / Orchestrate","description":"The plan extends outside the four walls — supplier collaboration, customer forecasts, clear-to-build visibility. Planning cadence tightens from monthly to weekly or continuous. Exceptions drive the work rather than full-cycle replanning. Trade-offs are made in financial terms, not just units.","tells":["Supplier/customer signals are inside the plan","Exception-driven work instead of full-cycle replanning","Trade-offs argued in dollars, not units"]},{"stage":5,"name":"Autonomous / Self-correcting","description":"Touchless planning for stable segments, ML-driven sensing, planners manage the algorithm's exceptions rather than the plan itself. Real but rare — mostly pockets within advanced CPG and high-tech, not whole enterprises.","tells":["Touchless planning exists for stable segments","Planners manage exceptions to the algorithm, not the plan"]}]}
+{
+  "scaleName": "Planning Maturity",
+  "dimensions": [
+    {
+      "id": "process",
+      "name": "Process"
+    },
+    {
+      "id": "data",
+      "name": "Data"
+    },
+    {
+      "id": "organization",
+      "name": "Organization"
+    },
+    {
+      "id": "technology",
+      "name": "Technology"
+    }
+  ],
+  "stages": [
+    {
+      "stage": 1,
+      "name": "React",
+      "description": "Planning is spreadsheets and tribal knowledge. Demand plan is basically last year plus a gut adjustment from sales. Supply side firefights: expedites, air freight, angry calls to suppliers. No single version of the truth \u2014 finance, sales, and ops each have their own numbers.",
+      "tells": [
+        "Customer can't answer \"what's your forecast accuracy?\" because nobody measures it"
+      ]
+    },
+    {
+      "stage": 2,
+      "name": "Anticipate",
+      "description": "Functional planning exists but in silos. There's a demand planner running stat forecasts, a supply planner running MRP, maybe a monthly S&OP meeting that's really just a review deck.",
+      "tells": [
+        "Plans exist but don't talk to each other",
+        "The S&OP meeting relitigates the past instead of making forward decisions"
+      ]
+    },
+    {
+      "stage": 3,
+      "name": "Integrate",
+      "description": "Where IBP as a discipline (not just the product) starts. One demand signal feeds supply, inventory, and financial planning. S&OP has real scenario discussion \u2014 \"if we take this promotion, what does it cost us in capacity?\" Constrained planning replaces unconstrained wish lists. Most mid-to-large manufacturers claim to be here; genuinely maybe 20-30% are.",
+      "tells": [
+        "One demand signal feeds supply, inventory, and financial planning",
+        "Scenario trade-offs are actually discussed in S&OP"
+      ]
+    },
+    {
+      "stage": 4,
+      "name": "Collaborate / Orchestrate",
+      "description": "The plan extends outside the four walls \u2014 supplier collaboration, customer forecasts, clear-to-build visibility. Planning cadence tightens from monthly to weekly or continuous. Exceptions drive the work rather than full-cycle replanning. Trade-offs are made in financial terms, not just units.",
+      "tells": [
+        "Supplier/customer signals are inside the plan",
+        "Exception-driven work instead of full-cycle replanning",
+        "Trade-offs argued in dollars, not units"
+      ]
+    },
+    {
+      "stage": 5,
+      "name": "Autonomous / Self-correcting",
+      "description": "Touchless planning for stable segments, ML-driven sensing, planners manage the algorithm's exceptions rather than the plan itself. Real but rare \u2014 mostly pockets within advanced CPG and high-tech, not whole enterprises.",
+      "tells": [
+        "Touchless planning exists for stable segments",
+        "Planners manage exceptions to the algorithm, not the plan"
+      ]
+    }
+  ]
+}

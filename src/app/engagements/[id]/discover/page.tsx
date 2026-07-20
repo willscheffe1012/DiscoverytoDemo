@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
 import {
+  artifacts,
   engagements,
   facts,
   maturityScores,
@@ -59,6 +60,12 @@ export default function DiscoverPage({ params }: { params: { id: string } }) {
       .from(maturityScores)
       .where(eq(maturityScores.engagementId, engagementId))
       .orderBy(desc(maturityScores.createdAt))
+      .all(),
+    artifacts: db
+      .select()
+      .from(artifacts)
+      .where(eq(artifacts.engagementId, engagementId))
+      .orderBy(desc(artifacts.createdAt))
       .all(),
   };
   return (
