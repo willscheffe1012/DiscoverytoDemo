@@ -3,6 +3,11 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { sessions } from "@/db/schema";
+
+const patchSchema = z.object({
+  id: z.number().int(),
+  notes: z.string(),
+});
 const bodySchema = z.object({
   title: z.string().trim().min(1),
   heldAt: z.number().int(),
@@ -32,4 +37,19 @@ export async function DELETE(
     .where(and(eq(sessions.engagementId, engagementId), eq(sessions.id, id)))
     .run();
   return NextResponse.json({ ok: true });
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } },
+) {
+  const engagementId = Number(params.id);
+  const { id, notes } = patchSchema.parse(await request.json());
+  const row = db
+    .update(sessions)
+    .set({ notes })
+    .where(and(eq(sessions.engagementId, engagementId), eq(sessions.id, id)))
+    .returning()
+    .get();
+  return NextResponse.json(row);
 }
