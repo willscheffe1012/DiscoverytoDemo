@@ -17,6 +17,6 @@ export async function POST(_request: Request, { params }: { params: { id: string
     const inserted = db.insert(artifacts).values({ engagementId, kind: "company_profile", version: (latest?.version ?? 0) + 1, contentJson: JSON.stringify(profile), modelUsed: process.env.AI_MODEL ?? "unknown", createdAt: Date.now() }).returning().get();
     return NextResponse.json({ artifact: inserted });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Profile generation failed" }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? `${error.message}${"bodySnippet" in error && error.bodySnippet ? `: ${error.bodySnippet}` : ""}` : "Profile generation failed" }, { status: 500 });
   }
 }

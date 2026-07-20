@@ -11,5 +11,5 @@ export default function EngagementPage({ params }: { params: { id: string } }) {
   if (!engagement) notFound();
   const inputRows = db.select().from(inputs).where(eq(inputs.engagementId, engagementId)).orderBy(desc(inputs.createdAt)).all();
   const artifactRows = db.select().from(artifacts).where(and(eq(artifacts.engagementId, engagementId), eq(artifacts.kind, "company_profile"))).orderBy(desc(artifacts.version)).all();
-  return <><div className="px-6 pt-6"><Link href="/" className="text-sm text-cyan-300 hover:text-cyan-200">← Engagements</Link></div><EngagementWorkspace engagementId={engagementId} accountName={engagement.accountName} inputs={inputRows} artifacts={artifactRows} /></>;
+  return <><EngagementWorkspace engagementId={engagementId} accountName={engagement.accountName} inputs={inputRows} artifacts={artifactRows} /></>;
 }

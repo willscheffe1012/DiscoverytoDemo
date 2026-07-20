@@ -16,6 +16,6 @@ export async function GET() {
     const text = await complete({ system: "Reply with OK and no other text.", messages: [{ role: "user", content: "reply with OK" }], maxTokens: 16, temperature: 0 });
     ai = text.trim().toUpperCase() === "OK";
     if (!ai) aiError = `Unexpected LLM response: ${text.slice(0, 120)}`;
-  } catch (error) { aiError = error instanceof Error ? error.message : String(error); }
+  } catch (error) { aiError = error instanceof Error ? `${error.message}${"bodySnippet" in error && error.bodySnippet ? `: ${error.bodySnippet}` : ""}` : String(error); }
   return NextResponse.json({ db: dbOk, ai, ...(aiError ? { aiError } : {}) });
 }
