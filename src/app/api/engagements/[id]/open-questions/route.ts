@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { openQuestions } from "@/db/schema";
 const createSchema = z.object({
   sessionId: z.number().int().nullable().optional(),
+  origin: z.enum(["manual", "ai"]).optional().default("manual"),
   question: z.string().trim().min(1),
 });
 export async function POST(

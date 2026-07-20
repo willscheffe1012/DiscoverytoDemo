@@ -5,6 +5,7 @@ import {
   artifacts,
   engagements,
   facts,
+  maturityEvidence,
   maturityScores,
   openQuestions,
   painPoints,
@@ -60,6 +61,12 @@ export default function DiscoverPage({ params }: { params: { id: string } }) {
       .from(maturityScores)
       .where(eq(maturityScores.engagementId, engagementId))
       .orderBy(desc(maturityScores.createdAt))
+      .all(),
+    maturityEvidence: db
+      .select()
+      .from(maturityEvidence)
+      .where(eq(maturityEvidence.engagementId, engagementId))
+      .orderBy(desc(maturityEvidence.createdAt))
       .all(),
     artifacts: db
       .select()

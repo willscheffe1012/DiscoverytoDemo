@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { painPoints } from "@/db/schema";
 const createSchema = z.object({
   sessionId: z.number().int().nullable().optional(),
+  origin: z.enum(["manual", "ai"]).optional().default("manual"),
   pain: z.string().trim().min(1),
   quote: z.string().optional().default(""),
   severity: z.enum(["high", "medium", "low"]).optional().default("medium"),

@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { systemsLandscape } from "@/db/schema";
 const bodySchema = z.object({
   sessionId: z.number().int().nullable().optional(),
+  origin: z.enum(["manual", "ai"]).optional().default("manual"),
   system: z.string().trim().min(1),
   role: z.string().optional().default(""),
   sentiment: z

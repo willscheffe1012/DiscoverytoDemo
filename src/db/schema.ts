@@ -23,6 +23,9 @@ export const inputs = sqliteTable("inputs", {
   }).notNull(),
   title: text("title").notNull(),
   content: text("content").notNull(),
+  origin: text("origin", { enum: ["manual", "ai"] })
+    .notNull()
+    .default("manual"),
   createdAt: integer("created_at").notNull(),
 });
 
@@ -31,7 +34,9 @@ export const artifacts = sqliteTable("artifacts", {
   engagementId: integer("engagement_id")
     .notNull()
     .references(() => engagements.id),
-  kind: text("kind", { enum: ["company_profile", "question_gaps", "maturity_assessment"] }).notNull(),
+  kind: text("kind", {
+    enum: ["company_profile", "question_gaps", "maturity_assessment"],
+  }).notNull(),
   version: integer("version").notNull(),
   contentJson: text("content_json").notNull(),
   modelUsed: text("model_used").notNull(),
@@ -67,6 +72,9 @@ export const facts = sqliteTable("facts", {
     ],
   }).notNull(),
   content: text("content").notNull(),
+  origin: text("origin", { enum: ["manual", "ai"] })
+    .notNull()
+    .default("manual"),
   createdAt: integer("created_at").notNull(),
 });
 export const systemsLandscape = sqliteTable("systems_landscape", {
@@ -82,6 +90,9 @@ export const systemsLandscape = sqliteTable("systems_landscape", {
   })
     .notNull()
     .default("unknown"),
+  origin: text("origin", { enum: ["manual", "ai"] })
+    .notNull()
+    .default("manual"),
   createdAt: integer("created_at").notNull(),
 });
 export const painPoints = sqliteTable("pain_points", {
@@ -95,6 +106,9 @@ export const painPoints = sqliteTable("pain_points", {
   severity: text("severity", { enum: ["high", "medium", "low"] })
     .notNull()
     .default("medium"),
+  origin: text("origin", { enum: ["manual", "ai"] })
+    .notNull()
+    .default("manual"),
   createdAt: integer("created_at").notNull(),
 });
 export const openQuestions = sqliteTable("open_questions", {
@@ -108,6 +122,9 @@ export const openQuestions = sqliteTable("open_questions", {
     .notNull()
     .default("open"),
   answer: text("answer").notNull().default(""),
+  origin: text("origin", { enum: ["manual", "ai"] })
+    .notNull()
+    .default("manual"),
   createdAt: integer("created_at").notNull(),
 });
 export const maturityScores = sqliteTable("maturity_scores", {
@@ -119,6 +136,23 @@ export const maturityScores = sqliteTable("maturity_scores", {
   dimensionId: text("dimension_id").notNull(),
   stage: integer("stage").notNull(),
   evidence: text("evidence").notNull().default(""),
-  origin: text("origin", { enum: ["manual", "ai_accepted"] }).notNull().default("manual"),
+  origin: text("origin", { enum: ["manual", "ai_accepted"] })
+    .notNull()
+    .default("manual"),
+  createdAt: integer("created_at").notNull(),
+});
+
+export const maturityEvidence = sqliteTable("maturity_evidence", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  engagementId: integer("engagement_id")
+    .notNull()
+    .references(() => engagements.id),
+  sessionId: integer("session_id").references(() => sessions.id),
+  dimensionId: text("dimension_id").notNull(),
+  quote: text("quote").notNull(),
+  note: text("note").notNull().default(""),
+  origin: text("origin", { enum: ["manual", "ai"] })
+    .notNull()
+    .default("ai"),
   createdAt: integer("created_at").notNull(),
 });

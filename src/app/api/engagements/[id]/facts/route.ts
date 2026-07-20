@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { facts } from "@/db/schema";
 const bodySchema = z.object({
   sessionId: z.number().int().nullable().optional(),
+  origin: z.enum(["manual", "ai"]).optional().default("manual"),
   category: z.enum([
     "segment",
     "footprint",
