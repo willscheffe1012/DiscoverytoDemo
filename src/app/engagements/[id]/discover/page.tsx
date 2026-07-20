@@ -25,13 +25,36 @@ export default function DiscoverPage({ params }: { params: { id: string } }) {
   if (!engagement) notFound();
   const { pack, warning } = loadIndustryPack(engagement.industry);
   const maturity = loadMaturityConfig();
+  const initialSessions = db
+    .select()
+    .from(sessions)
+    .where(eq(sessions.engagementId, engagementId))
+    .orderBy(desc(sessions.heldAt))
+    .all();
+
+  if (initialSessions.length === 0) {
+    const now = Date.now();
+    db.insert(sessions)
+      .values({
+        engagementId,
+        title: "Session 1",
+        heldAt: now,
+        createdAt: now,
+      })
+      .run();
+  }
+
+  const discoverSessions = initialSessions.length
+    ? initialSessions
+    : db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.engagementId, engagementId))
+        .orderBy(desc(sessions.heldAt))
+        .all();
+
   const initial = {
-    sessions: db
-      .select()
-      .from(sessions)
-      .where(eq(sessions.engagementId, engagementId))
-      .orderBy(desc(sessions.heldAt))
-      .all(),
+    sessions: discoverSessions,
     facts: db
       .select()
       .from(facts)

@@ -159,14 +159,18 @@ function NotesStream({
   onExtract: () => void;
 }) {
   const [notes, setNotes] = useState(session?.notes ?? "");
-  const [status, setStatus] = useState<"Saved" | "Saving…" | "Autosave failed">(
-    "Saved",
-  );
+  const [status, setStatus] = useState<
+    ""
+    | "Saved"
+    | "Saving…"
+    | "Autosave failed"
+    | "Autosave failed — no active session"
+  >("");
   const ref = useRef<HTMLTextAreaElement>(null);
-  useEffect(
-    () => setNotes(session?.notes ?? ""),
-    [session?.id, session?.notes],
-  );
+  useEffect(() => {
+    setNotes(session?.notes ?? "");
+    setStatus("");
+  }, [session?.id, session?.notes]);
   useEffect(() => {
     const focus = (event: KeyboardEvent) => {
       if (event.key === "/" && document.activeElement !== ref.current) {
@@ -179,7 +183,10 @@ function NotesStream({
   }, []);
   const saveNotes = useCallback(
     async (value: string) => {
-      if (!session) return;
+      if (!session) {
+        setStatus("Autosave failed — no active session");
+        return;
+      }
       setStatus("Saving…");
       try {
         await api<SessionRow>(engagementId, "sessions", "PATCH", {
@@ -215,11 +222,11 @@ function NotesStream({
       />
       <div className="mt-3 flex items-center gap-3">
         <button className="btn-primary" onClick={onExtract} disabled={!session}>
-          Extract
+          {session ? "Extract" : "Create a session to extract"}
         </button>
         <span
           className={
-            status === "Autosave failed"
+            status.startsWith("Autosave failed")
               ? "text-red-700"
               : "text-[var(--ink-muted)]"
           }
@@ -295,7 +302,10 @@ export function DiscoveryWorkspace({
     setter((rows) => rows.filter((row) => row.id !== id));
   }
   async function extract() {
-    if (!active) return;
+    if (!active) {
+      setError("Create a session to extract");
+      return;
+    }
     setExtracting(true);
     setError("");
     try {
