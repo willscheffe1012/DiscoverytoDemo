@@ -12,7 +12,7 @@ import {
   sessions,
   systemsLandscape,
 } from "@/db/schema";
-import { loadIndustryPack, loadMaturityConfig } from "@/lib/config";
+import { loadCapabilityCatalog, loadIndustryPack, loadMaturityConfig } from "@/lib/config";
 import { DiscoveryWorkspace } from "@/components/discovery-workspace";
 
 export default function DiscoverPage({ params }: { params: { id: string } }) {
@@ -25,6 +25,7 @@ export default function DiscoverPage({ params }: { params: { id: string } }) {
   if (!engagement) notFound();
   const { pack, warning } = loadIndustryPack(engagement.industry);
   const maturity = loadMaturityConfig();
+  const { catalog: capabilityCatalog, warning: catalogWarning } = loadCapabilityCatalog();
   const initialSessions = db
     .select()
     .from(sessions)
@@ -104,6 +105,8 @@ export default function DiscoverPage({ params }: { params: { id: string } }) {
       pack={pack}
       packWarning={warning}
       maturity={maturity}
+      capabilityCatalog={capabilityCatalog}
+      catalogWarning={catalogWarning}
       initial={initial}
     />
   );

@@ -35,7 +35,7 @@ export const artifacts = sqliteTable("artifacts", {
     .notNull()
     .references(() => engagements.id),
   kind: text("kind", {
-    enum: ["company_profile", "question_gaps", "maturity_assessment"],
+    enum: ["company_profile", "question_gaps", "maturity_assessment", "solution_fit"],
   }).notNull(),
   version: integer("version").notNull(),
   contentJson: text("content_json").notNull(),
