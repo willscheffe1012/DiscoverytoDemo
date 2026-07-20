@@ -1,4 +1,5 @@
 import type { CompanyProfile } from "@/lib/ai/schemas/company-profile";
+import type { CapabilityCatalog } from "@/lib/config";
 
 const esc = (value: string) =>
   value.replaceAll("|", "\\|").replace(/\s+/g, " ").trim();
@@ -98,6 +99,22 @@ interface DiscoveryMaturity {
 interface DiscoveryAssessment {
   narrative?: string;
 }
+interface DiscoverySolutionFit {
+  licensingContext: "legacy" | "new" | "unknown";
+  needs: Array<{
+    need: string;
+    evidence: Array<{ quote: string; source: string }>;
+    capabilities: Array<{
+      capabilityId: string;
+      fit: string;
+      rationale: string;
+      unknowns: string[];
+      conversationAngle: string;
+    }>;
+  }>;
+  cautions: string[];
+  narrative: string;
+}
 
 type DiscoveryMarkdown = {
   engagement: DiscoveryEngagement;
@@ -110,6 +127,8 @@ type DiscoveryMarkdown = {
   maturityEvidence?: DiscoveryEvidence[];
   maturity: DiscoveryMaturity;
   maturityAssessment?: DiscoveryAssessment | null;
+  solutionFit?: DiscoverySolutionFit | null;
+  capabilityCatalog?: CapabilityCatalog | null;
 };
 export function discoveryToMarkdown(d: DiscoveryMarkdown): string {
   const sessionName = (id: number | null) =>
@@ -147,6 +166,23 @@ export function discoveryToMarkdown(d: DiscoveryMarkdown): string {
           }`;
         })
         .join("\n\n")}\n\n`
+    : "";
+  const solutionFitMd = d.solutionFit
+    ? `## Solution Fit\n${d.solutionFit.narrative}\n\n${d.solutionFit.needs
+        .map((need) => {
+          const evidence = need.evidence.map((e) => `- Evidence: “${e.quote}” — ${e.source}`).join("\n") || "- Evidence: not discussed";
+          const capabilities = need.capabilities.length
+            ? need.capabilities
+                .map((capability) => {
+                  const catalogCapability = d.capabilityCatalog?.capabilities.find((item) => item.id === capability.capabilityId);
+                  const label = catalogCapability ? catalogCapability.name : capability.capabilityId;
+                  return `- **${label}** (${capability.fit}): ${capability.rationale}\n  - Angle: ${capability.conversationAngle}\n  - Unknowns: ${capability.unknowns.join("; ") || "none"}`;
+                })
+                .join("\n")
+            : "- No capability fit is ready from current evidence.";
+          return `### ${need.need}\n${evidence}\n${capabilities}`;
+        })
+        .join("\n\n")}\n\n### Cautions\n${bullets(d.solutionFit.cautions)}\n\n`
     : "";
   const byCat = d.facts.reduce(
     (acc: Record<string, string[]>, f) => (

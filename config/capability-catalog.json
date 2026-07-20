@@ -1,0 +1,102 @@
+{
+  "product": "IBP",
+  "licensingNote": "Customers with an existing IBP license use legacy module names (IBP for S&OP, IBP for Demand, IBP for Inventory, IBP for Response & Supply, IBP Control Tower). Net-new customers license under the new packaging (IBP Foundation, IBP Advanced Demand, IBP Advanced Inventory, IBP Advanced Supply). Infer which naming applies from the systems landscape (existing IBP = legacy names); when unknown, show both.",
+  "capabilities": [
+    {
+      "id": "stat-forecasting",
+      "name": "Statistical forecasting",
+      "moduleLegacy": "IBP for Demand",
+      "moduleNew": "IBP Advanced Demand",
+      "businessNeeds": ["forecast accuracy", "planner productivity"],
+      "fitSignals": ["manual or naive forecasting", "last year plus gut"],
+      "prerequisites": ["2+ years clean sales history [REVIEW]"],
+      "disqualifiers": ["none"],
+      "dataRequirements": "moderate",
+      "notes": "[REVIEW]"
+    },
+    {
+      "id": "ml-forecasting",
+      "name": "ML forecasting (incl. gradient boosting)",
+      "moduleLegacy": "IBP for Demand",
+      "moduleNew": "IBP Advanced Demand",
+      "businessNeeds": ["accuracy beyond stat baseline", "demand volatility"],
+      "fitSignals": ["rich causal data available (POS, promotions, weather)"],
+      "prerequisites": ["SIGNIFICANT historical + causal data"],
+      "disqualifiers": ["sparse/short history"],
+      "dataRequirements": "heavy — this is a gating constraint, never propose without evidence of data depth",
+      "notes": ""
+    },
+    {
+      "id": "demand-sensing",
+      "name": "Short-term demand sensing",
+      "moduleLegacy": "IBP for Demand",
+      "moduleNew": "IBP Advanced Demand",
+      "businessNeeds": ["near-term signal", "channel latency"],
+      "fitSignals": ["downstream data exists (orders, POS)", "short-horizon volatility pain"],
+      "prerequisites": ["daily-grain data feeds [REVIEW]"],
+      "disqualifiers": [],
+      "dataRequirements": "heavy",
+      "notes": ""
+    },
+    {
+      "id": "sop-process",
+      "name": "S&OP/IBP process & scenario planning",
+      "moduleLegacy": "IBP for S&OP",
+      "moduleNew": "IBP Foundation [REVIEW]",
+      "businessNeeds": ["cross-functional alignment", "decision-making cadence", "scenario speed"],
+      "fitSignals": ["S&OP relitigates the past", "slow scenario building", "no single version of truth"],
+      "prerequisites": ["exec sponsorship for process change"],
+      "disqualifiers": ["none"],
+      "dataRequirements": "light",
+      "notes": ""
+    },
+    {
+      "id": "inventory-meio",
+      "name": "Multi-echelon inventory optimization (MEIO)",
+      "moduleLegacy": "IBP for Inventory",
+      "moduleNew": "IBP Advanced Inventory",
+      "businessNeeds": ["working capital reduction", "service-level protection"],
+      "fitSignals": ["buffer-everywhere behavior", "cash pressure", "multi-tier network"],
+      "prerequisites": ["multi-echelon network", "SIGNIFICANT data (demand variability, lead times, service targets)"],
+      "disqualifiers": ["single-echelon trivial networks"],
+      "dataRequirements": "heavy — gating",
+      "notes": ""
+    },
+    {
+      "id": "ts-supply",
+      "name": "Time-series supply planning (heuristics/optimizer)",
+      "moduleLegacy": "IBP for Response & Supply",
+      "moduleNew": "IBP Advanced Supply [REVIEW]",
+      "businessNeeds": ["constrained planning", "capacity trade-offs", "rough-cut feasibility"],
+      "fitSignals": ["capacity bottlenecks", "unconstrained wish-list plans"],
+      "prerequisites": ["none beyond master data hygiene"],
+      "disqualifiers": [],
+      "dataRequirements": "moderate",
+      "notes": ""
+    },
+    {
+      "id": "order-based-planning",
+      "name": "Order-based planning / response",
+      "moduleLegacy": "IBP for Response & Supply",
+      "moduleNew": "IBP Advanced Supply",
+      "businessNeeds": ["order-level commitment", "allocation", "backorder processing", "fast re-promising"],
+      "fitSignals": ["order confirmation pain", "allocation fights", "APO SNP/CTM migration"],
+      "prerequisites": ["works best with an SAP ERP backend (ECC/S/4) — treat non-SAP backend as near-disqualifying [REVIEW]"],
+      "disqualifiers": ["variant configuration / make-to-order dominant business"],
+      "dataRequirements": "moderate",
+      "notes": ""
+    },
+    {
+      "id": "control-tower",
+      "name": "Supply chain visibility & alerting",
+      "moduleLegacy": "IBP Control Tower",
+      "moduleNew": "IBP Foundation [REVIEW]",
+      "businessNeeds": ["end-to-end visibility", "exception management"],
+      "fitSignals": ["firefighting culture", "no alerting", "we find out too late"],
+      "prerequisites": ["none"],
+      "disqualifiers": [],
+      "dataRequirements": "light-moderate",
+      "notes": ""
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { discoveryToMarkdown } from "@/lib/markdown";
-import type { IndustryPack, MaturityConfig } from "@/lib/config";
+import type { CapabilityCatalog, IndustryPack, MaturityConfig } from "@/lib/config";
 
 type Origin = "manual" | "ai";
 type Severity = "high" | "medium" | "low";
@@ -74,6 +74,23 @@ interface ArtifactRow {
   modelUsed: string;
   createdAt: number;
 }
+type FitRating = "strong" | "possible" | "premature" | "disqualified";
+interface SolutionFit {
+  licensingContext: "legacy" | "new" | "unknown";
+  needs: Array<{
+    need: string;
+    evidence: Array<{ quote: string; source: string }>;
+    capabilities: Array<{
+      capabilityId: string;
+      fit: FitRating;
+      rationale: string;
+      unknowns: string[];
+      conversationAngle: string;
+    }>;
+  }>;
+  cautions: string[];
+  narrative: string;
+}
 interface InitialRows {
   sessions: SessionRow[];
   facts: FactRow[];
@@ -95,6 +112,13 @@ const factCats: FactCategory[] = [
   "other",
 ];
 const sentiments: Sentiment[] = ["unknown", "pain", "neutral", "liked"];
+const fitClasses: Record<FitRating, string> = {
+  strong: "border-indigo-200 bg-indigo-50 text-indigo-800",
+  possible: "border-slate-200 bg-slate-50 text-slate-700",
+  premature: "border-amber-200 bg-amber-50 text-amber-800",
+  disqualified: "border-red-300 bg-red-50 text-red-800 line-through",
+};
+
 const stageColors: Record<number, string> = {
   1: "#ef4444",
   2: "#f97316",
@@ -117,6 +141,14 @@ async function api<T>(
   const json = await response.json();
   if (!response.ok) throw new Error(json.error ?? "Request failed");
   return json as T;
+}
+
+function StaleChip() {
+  return (
+    <span className="rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800">
+      Data has changed since this assessment — re-run Draft assessment
+    </span>
+  );
 }
 
 function AiChip({ origin }: { origin?: string }) {
@@ -243,12 +275,16 @@ export function DiscoveryWorkspace({
   pack,
   packWarning,
   maturity,
+  capabilityCatalog,
+  catalogWarning,
   initial,
 }: {
   engagement: Engagement;
   pack: IndustryPack | null;
   packWarning?: string;
   maturity: MaturityConfig;
+  capabilityCatalog: CapabilityCatalog | null;
+  catalogWarning?: string;
   initial: InitialRows;
 }) {
   const [sessions, setSessions] = useState(initial.sessions);
@@ -266,10 +302,15 @@ export function DiscoveryWorkspace({
   const session = sessions.find((s) => s.id === active);
   const mArtifacts = artifacts.filter((a) => a.kind === "maturity_assessment");
   const qArtifacts = artifacts.filter((a) => a.kind === "question_gaps");
-  const assessment = mArtifacts[0]
-    ? JSON.parse(mArtifacts[0].contentJson)
-    : null;
-  const gaps = qArtifacts[0] ? JSON.parse(qArtifacts[0].contentJson) : null;
+  const fitArtifacts = artifacts.filter((a) => a.kind === "solution_fit");
+  const [selectedFitId, setSelectedFitId] = useState<number | null>(fitArtifacts[0]?.id ?? null);
+  const selectedFitArtifact = fitArtifacts.find((a) => a.id === selectedFitId) ?? fitArtifacts[0];
+  const latestDataChange = Math.max(0, ...facts.map((r) => r.createdAt), ...systems.map((r) => r.createdAt), ...pains.map((r) => r.createdAt), ...questions.map((r) => r.createdAt), ...scores.map((r) => r.createdAt), ...evidence.map((r) => r.createdAt));
+  const assessmentArtifact = mArtifacts[0];
+  const questionArtifact = qArtifacts[0];
+  const assessment = assessmentArtifact ? JSON.parse(assessmentArtifact.contentJson) : null;
+  const gaps = questionArtifact ? JSON.parse(questionArtifact.contentJson) : null;
+  const solutionFit: SolutionFit | null = selectedFitArtifact ? JSON.parse(selectedFitArtifact.contentJson) : null;
   const current = useMemo(
     () =>
       Object.fromEntries(
@@ -333,7 +374,7 @@ export function DiscoveryWorkspace({
       setExtracting(false);
     }
   }
-  async function runAi(kind: "question-gaps" | "maturity-assessment") {
+  async function runAi(kind: "question-gaps" | "maturity-assessment" | "solution-fit") {
     const json = await api<{ artifact: ArtifactRow }>(
       engagement.id,
       kind,
@@ -341,6 +382,7 @@ export function DiscoveryWorkspace({
       {},
     );
     setArtifacts((rows) => [json.artifact, ...rows]);
+    if (kind === "solution-fit") setSelectedFitId(json.artifact.id);
   }
   async function newSession() {
     const row = await api<SessionRow>(engagement.id, "sessions", "POST", {
@@ -377,6 +419,9 @@ export function DiscoveryWorkspace({
           <button className="btn-secondary" onClick={newSession}>
             New session
           </button>
+          <button className="btn-primary" onClick={() => runAi("solution-fit")}>
+            Solution fit
+          </button>
           <button
             className="btn-secondary"
             onClick={() =>
@@ -392,6 +437,8 @@ export function DiscoveryWorkspace({
                   maturityEvidence: evidence,
                   maturity,
                   maturityAssessment: assessment,
+                  solutionFit,
+                  capabilityCatalog,
                 }),
               )
             }
@@ -423,12 +470,23 @@ export function DiscoveryWorkspace({
         evidence={evidence}
         scores={scores}
         assessment={assessment}
+        isStale={Boolean(assessmentArtifact && latestDataChange > assessmentArtifact.createdAt)}
         save={save}
         del={del}
         runDraft={() => runAi("maturity-assessment")}
         setScores={setScores}
         setEvidence={setEvidence}
       />{" "}
+      <SolutionFitPanel
+        catalog={capabilityCatalog}
+        warning={catalogWarning}
+        fit={solutionFit}
+        artifact={selectedFitArtifact}
+        artifacts={fitArtifacts}
+        isStale={Boolean(selectedFitArtifact && latestDataChange > selectedFitArtifact.createdAt)}
+        onSelect={setSelectedFitId}
+        ask={(question) => save<QuestionRow>("open-questions", setQuestions, { question })}
+      />
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
         <PainsPanel pains={pains} save={save} del={del} setPains={setPains} />
         <aside className="space-y-4">
@@ -447,6 +505,7 @@ export function DiscoveryWorkspace({
           />
           {gaps && (
             <Panel title="Suggested questions" count={gaps.suggestions.length}>
+              {questionArtifact && latestDataChange > questionArtifact.createdAt && <StaleChip />}
               <p className="text-sm text-[var(--ink-muted)]">
                 {gaps.coverageNotes}
               </p>
@@ -510,6 +569,7 @@ function MaturityBand({
   evidence,
   scores,
   assessment,
+  isStale,
   save,
   del,
   runDraft,
@@ -529,6 +589,7 @@ function MaturityBand({
       confidence: string;
     }>;
   } | null;
+  isStale: boolean;
   save: <Row>(
     path: string,
     setter: React.Dispatch<React.SetStateAction<Row[]>>,
@@ -626,9 +687,12 @@ function MaturityBand({
                 </form>
                 {proposal && (
                   <div className="rounded border border-[var(--line)] p-2 text-sm">
-                    <b>
-                      AI proposal: {proposal.proposedStage ?? "insufficient"}
-                    </b>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <b>
+                        AI proposal: {proposal.proposedStage ?? "insufficient"}
+                      </b>
+                      {isStale && <StaleChip />}
+                    </div>
                     <p>{proposal.rationale}</p>
                     {proposal.proposedStage && (
                       <button
@@ -659,7 +723,8 @@ function MaturityBand({
           );
         })}
       </div>
-      <div className="mt-4">
+      <div className="mt-4 space-y-3">
+        {isStale && <StaleChip />}
         <button className="btn-primary" onClick={runDraft}>
           Draft assessment
         </button>
@@ -922,5 +987,139 @@ function QuestionsPanel({
         </div>
       ))}
     </Panel>
+  );
+}
+
+function moduleName(
+  catalog: CapabilityCatalog,
+  capabilityId: string,
+  context: SolutionFit["licensingContext"],
+) {
+  const capability = catalog.capabilities.find((item) => item.id === capabilityId);
+  if (!capability) return capabilityId;
+  if (context === "legacy") return `${capability.name} — ${capability.moduleLegacy}`;
+  if (context === "new") return `${capability.name} — ${capability.moduleNew}`;
+  return `${capability.name} — ${capability.moduleLegacy} / ${capability.moduleNew}`;
+}
+
+function SolutionFitPanel({
+  catalog,
+  warning,
+  fit,
+  artifact,
+  artifacts,
+  isStale,
+  onSelect,
+  ask,
+}: {
+  catalog: CapabilityCatalog | null;
+  warning?: string;
+  fit: SolutionFit | null;
+  artifact?: ArtifactRow;
+  artifacts: ArtifactRow[];
+  isStale: boolean;
+  onSelect: (id: number) => void;
+  ask: (question: string) => Promise<void>;
+}) {
+  // DECISION: Render Solution Fit inline below pains context so the bridge from insight to action is visible without a slide-over.
+  if (warning) {
+    return (
+      <section className="token-card border-amber-200 bg-amber-50 p-4 text-amber-900">
+        {warning}
+      </section>
+    );
+  }
+  if (!catalog) return null;
+  return (
+    <section className="token-card space-y-4 p-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 className="mr-auto text-lg font-semibold">Solution Fit</h2>
+        {isStale && <StaleChip />}
+        {artifacts.length > 0 && (
+          <select
+            className="input-token"
+            value={artifact?.id ?? ""}
+            onChange={(event) => onSelect(Number(event.target.value))}
+          >
+            {artifacts.map((item) => (
+              <option key={item.id} value={item.id}>
+                v{item.version} · {new Date(item.createdAt).toLocaleString()}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      {!fit && (
+        <p className="text-sm text-[var(--ink-muted)]">
+          Run Solution fit to translate captured needs into evidence-grounded IBP conversation guidance.
+        </p>
+      )}
+      {fit && artifact && (
+        <>
+          <p className="text-sm text-[var(--ink-muted)]">
+            v{artifact.version} · {artifact.modelUsed} · {new Date(artifact.createdAt).toLocaleString()} · licensing: {fit.licensingContext}
+          </p>
+          <p className="rounded bg-indigo-50 p-3">{fit.narrative}</p>
+          {fit.cautions.length > 0 && (
+            <div className="rounded border border-amber-200 bg-amber-50 p-3">
+              <b>Cautions</b>
+              <ul className="list-disc pl-5">
+                {fit.cautions.map((caution) => (
+                  <li key={caution}>{caution}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="space-y-3">
+            {fit.needs.map((need) => (
+              <article key={need.need} className="rounded border border-[var(--line)] p-3">
+                <h3 className="font-semibold">{need.need}</h3>
+                <div className="mt-2 space-y-1">
+                  {need.evidence.map((item) => (
+                    <p key={`${item.source}-${item.quote}`} className="verbatim text-sm">
+                      “{item.quote}” — {item.source}
+                    </p>
+                  ))}
+                </div>
+                <div className="mt-3 space-y-3">
+                  {need.capabilities.map((capability) => (
+                    <div
+                      key={capability.capabilityId}
+                      className={`rounded border p-3 ${capability.fit === "disqualified" ? "border-red-200" : "border-[var(--line)]"}`}
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <b>{moduleName(catalog, capability.capabilityId, fit.licensingContext)}</b>
+                        <span className={`rounded border px-2 py-0.5 text-xs font-semibold ${fitClasses[capability.fit]}`}>
+                          {capability.fit}
+                        </span>
+                      </div>
+                      <p className="mt-2">{capability.rationale}</p>
+                      {capability.unknowns.length > 0 && (
+                        <ul className="mt-2 space-y-1">
+                          {capability.unknowns.map((unknown) => (
+                            <li key={unknown} className="flex flex-wrap items-center gap-2 text-sm">
+                              <span>Unknown: {unknown}</span>
+                              <button className="btn-secondary" onClick={() => ask(unknown)}>
+                                Ask this
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <p className="mt-2 rounded bg-slate-50 p-2 font-semibold">
+                        Conversation angle: {capability.conversationAngle}
+                      </p>
+                    </div>
+                  ))}
+                  {need.capabilities.length === 0 && (
+                    <p className="text-sm text-[var(--ink-muted)]">No capability fit is ready from the current evidence.</p>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
+    </section>
   );
 }
