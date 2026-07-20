@@ -31,16 +31,16 @@ export default function Home() {
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">
       <header className="mb-8">
-        <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">
+        <p className="text-sm uppercase tracking-[0.3em] text-[var(--accent)]">
           Discovery Engine
         </p>
         <h1 className="mt-2 text-3xl font-semibold">Engagements</h1>
       </header>
       <section className="grid gap-6 md:grid-cols-[1fr_360px]">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+        <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
           {rows.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-700 p-8 text-slate-300">
-              <h2 className="text-xl font-semibold text-white">Welcome.</h2>
+            <div className="rounded-xl border border-dashed border-[var(--line)] p-8 text-[var(--ink-muted)]">
+              <h2 className="text-xl font-semibold text-[var(--ink)]">Welcome.</h2>
               <p className="mt-2">
                 Create your first customer engagement to begin collecting
                 discovery intelligence.
@@ -52,15 +52,15 @@ export default function Home() {
                 <Link
                   key={row.id}
                   href={`/engagements/${row.id}/discover`}
-                  className="block py-4 hover:bg-slate-800/40"
+                  className="block py-4 hover:bg-[var(--accent-soft)]"
                 >
-                  <div className="font-medium text-white">
+                  <div className="font-medium text-[var(--ink)]">
                     {row.accountName}
                   </div>
-                  <div className="mt-1 text-sm text-slate-400">
+                  <div className="mt-1 text-sm text-[var(--ink-muted)]">
                     {row.industry} · {row.status}
                   </div>
-                  <div className="mt-2 text-xs text-slate-500">
+                  <div className="mt-2 text-xs text-[var(--ink-muted)]">
                     {counts[row.id]?.sessions ?? 0} sessions ·{" "}
                     {counts[row.id]?.pains ?? 0} pains ·{" "}
                     {counts[row.id]?.openQuestions ?? 0} open questions
@@ -73,22 +73,22 @@ export default function Home() {
         <form
           action="/api/engagements"
           method="post"
-          className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-xl"
+          className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-sm"
         >
           <h2 className="text-lg font-semibold">New Engagement</h2>
-          <label className="mt-5 block text-sm text-slate-300">
+          <label className="mt-5 block text-sm text-[var(--ink-muted)]">
             Account name
             <input
               name="accountName"
               required
-              className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white"
+              className="mt-2 w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2 text-[var(--ink)]"
             />
           </label>
-          <label className="mt-4 block text-sm text-slate-300">
+          <label className="mt-4 block text-sm text-[var(--ink-muted)]">
             Industry
             <select
               name="industry"
-              className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white"
+              className="mt-2 w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2 text-[var(--ink)]"
             >
               {industries.map(([value, label]) => (
                 <option key={value} value={value}>
@@ -97,7 +97,7 @@ export default function Home() {
               ))}
             </select>
           </label>
-          <button className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2 font-semibold text-slate-950 hover:bg-cyan-300">
+          <button className="mt-5 w-full rounded-lg bg-[var(--accent)] px-4 py-2 font-semibold text-[var(--ink)] ">
             Create engagement
           </button>
         </form>

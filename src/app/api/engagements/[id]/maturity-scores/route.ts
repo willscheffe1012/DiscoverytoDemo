@@ -8,6 +8,7 @@ const bodySchema = z.object({
   dimensionId: z.string().trim().min(1),
   stage: z.number().int().min(1).max(5),
   evidence: z.string().optional().default(""),
+  origin: z.enum(["manual", "ai_accepted"]).optional().default("manual"),
 });
 export async function POST(
   request: Request,

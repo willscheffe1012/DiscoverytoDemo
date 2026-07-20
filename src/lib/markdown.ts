@@ -49,6 +49,7 @@ type DiscoveryMarkdown = {
   openQuestions: any[];
   maturityScores: any[];
   maturity: any;
+  maturityAssessment?: any;
 };
 export function discoveryToMarkdown(d: DiscoveryMarkdown): string {
   const sessionName = (id: number | null) =>
@@ -72,9 +73,13 @@ export function discoveryToMarkdown(d: DiscoveryMarkdown): string {
       const prior = d.maturityScores.filter(
         (s: any) => s.dimensionId === dim.id && s.id !== row?.id,
       );
-      return `### ${dim.name}\nCurrent: ${row ? `Stage ${row.stage} — ${stages[row.stage]?.name ?? "Unknown"}. Evidence: ${row.evidence || "not discussed"}` : "not discussed"}${prior.length ? `\nPrior scores:\n${prior.map((p: any) => `- Stage ${p.stage} on ${new Date(p.createdAt).toLocaleDateString()} — ${p.evidence || "not discussed"}`).join("\n")}` : ""}`;
+      return `### ${dim.name}\nCurrent: ${row ? `Stage ${row.stage} — ${stages[row.stage]?.name ?? "Unknown"}. Origin: ${row.origin ?? "manual"}. Evidence: ${row.evidence || "not discussed"}` : "not discussed"}${prior.length ? `\nPrior scores:\n${prior.map((p: any) => `- Stage ${p.stage} on ${new Date(p.createdAt).toLocaleDateString()} — ${p.origin ?? "manual"}: ${p.evidence || "not discussed"}`).join("\n")}` : ""}`;
     })
     .join("\n\n");
+
+  const readout = d.maturityAssessment
+    ? `## Maturity Readout\n${d.maturityAssessment.narrative}\n\n${d.maturity.dimensions.map((dim: any) => { const row = current[dim.id]; return `### ${dim.name}\nCurrent: ${row ? `Stage ${row.stage} — ${stages[row.stage]?.name ?? "Unknown"} (${row.origin ?? "manual"}). Evidence: ${row.evidence || "not discussed"}` : "not discussed"}`; }).join("\n\n")}\n\n`
+    : "";
   const byCat = d.facts.reduce(
     (acc: Record<string, string[]>, f: any) => (
       (acc[f.category] ??= []).push(f.content),
