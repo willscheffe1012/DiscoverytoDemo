@@ -297,6 +297,7 @@ export function DiscoveryWorkspace({
   const [evidence, setEvidence] = useState(initial.maturityEvidence);
   const [artifacts, setArtifacts] = useState(initial.artifacts);
   const [extracting, setExtracting] = useState(false);
+  const [runningAi, setRunningAi] = useState<string | null>(null);
   const [summary, setSummary] = useState("");
   const [error, setError] = useState("");
   const session = sessions.find((s) => s.id === active);
@@ -305,7 +306,7 @@ export function DiscoveryWorkspace({
   const fitArtifacts = artifacts.filter((a) => a.kind === "solution_fit");
   const [selectedFitId, setSelectedFitId] = useState<number | null>(fitArtifacts[0]?.id ?? null);
   const selectedFitArtifact = fitArtifacts.find((a) => a.id === selectedFitId) ?? fitArtifacts[0];
-  const latestDataChange = Math.max(0, ...facts.map((r) => r.createdAt), ...systems.map((r) => r.createdAt), ...pains.map((r) => r.createdAt), ...questions.map((r) => r.createdAt), ...scores.map((r) => r.createdAt), ...evidence.map((r) => r.createdAt));
+  const latestDataChange = Math.max(0, ...facts.map((r) => r.createdAt), ...systems.map((r) => r.createdAt), ...pains.map((r) => r.createdAt), ...questions.map((r) => r.createdAt));
   const assessmentArtifact = mArtifacts[0];
   const questionArtifact = qArtifacts[0];
   const assessment = assessmentArtifact ? JSON.parse(assessmentArtifact.contentJson) : null;
@@ -375,14 +376,22 @@ export function DiscoveryWorkspace({
     }
   }
   async function runAi(kind: "question-gaps" | "maturity-assessment" | "solution-fit") {
-    const json = await api<{ artifact: ArtifactRow }>(
-      engagement.id,
-      kind,
-      "POST",
-      {},
-    );
-    setArtifacts((rows) => [json.artifact, ...rows]);
-    if (kind === "solution-fit") setSelectedFitId(json.artifact.id);
+    setRunningAi(kind);
+    setError("");
+    try {
+      const json = await api<{ artifact: ArtifactRow }>(
+        engagement.id,
+        kind,
+        "POST",
+        {},
+      );
+      setArtifacts((rows) => [json.artifact, ...rows]);
+      if (kind === "solution-fit") setSelectedFitId(json.artifact.id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "AI request failed");
+    } finally {
+      setRunningAi(null);
+    }
   }
   async function newSession() {
     const row = await api<SessionRow>(engagement.id, "sessions", "POST", {
@@ -419,8 +428,12 @@ export function DiscoveryWorkspace({
           <button className="btn-secondary" onClick={newSession}>
             New session
           </button>
-          <button className="btn-primary" onClick={() => runAi("solution-fit")}>
-            Solution fit
+          <button
+            className="btn-primary"
+            onClick={() => runAi("solution-fit")}
+            disabled={runningAi !== null}
+          >
+            {runningAi === "solution-fit" ? "Running…" : "Solution fit"}
           </button>
           <button
             className="btn-secondary"
@@ -474,6 +487,7 @@ export function DiscoveryWorkspace({
         save={save}
         del={del}
         runDraft={() => runAi("maturity-assessment")}
+        isRunningDraft={runningAi === "maturity-assessment"}
         setScores={setScores}
         setEvidence={setEvidence}
       />{" "}
@@ -573,6 +587,7 @@ function MaturityBand({
   save,
   del,
   runDraft,
+  isRunningDraft,
   setScores,
   setEvidence,
 }: {
@@ -601,6 +616,7 @@ function MaturityBand({
     setter: React.Dispatch<React.SetStateAction<BaseRow[]>>,
   ) => Promise<void>;
   runDraft: () => void;
+  isRunningDraft: boolean;
   setScores: React.Dispatch<React.SetStateAction<ScoreRow[]>>;
   setEvidence: React.Dispatch<React.SetStateAction<EvidenceRow[]>>;
 }) {
@@ -725,8 +741,12 @@ function MaturityBand({
       </div>
       <div className="mt-4 space-y-3">
         {isStale && <StaleChip />}
-        <button className="btn-primary" onClick={runDraft}>
-          Draft assessment
+        <button
+          className="btn-primary"
+          onClick={runDraft}
+          disabled={isRunningDraft}
+        >
+          {isRunningDraft ? "Running…" : "Draft assessment"}
         </button>
         {assessment?.narrative && (
           <p className="mt-3">{assessment.narrative}</p>
